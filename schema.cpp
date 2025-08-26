@@ -422,7 +422,7 @@ QString Antecedent::symbol(Type type)
         case G: return "G";
         case H: return "H";
         case I: return "I";
-        case J: return "G";
+        case J: return "J";
         case K: return "K";
         case L: return "L";
         case M: return "M";
@@ -495,7 +495,7 @@ QString Antecedent::ZMKCode(Type type)
         case G: return "G";
         case H: return "H";
         case I: return "I";
-        case J: return "G";
+        case J: return "J";
         case K: return "K";
         case L: return "L";
         case M: return "M";
@@ -568,7 +568,7 @@ QString Antecedent::QMKCode(Type type)
         case G: return "KC_G";
         case H: return "KC_H";
         case I: return "KC_I";
-        case J: return "KC_G";
+        case J: return "KC_J";
         case K: return "KC_K";
         case L: return "KC_L";
         case M: return "KC_M";

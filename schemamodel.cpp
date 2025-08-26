@@ -103,7 +103,8 @@ QVariant SchemaModel::data(const QModelIndex &index, int role) const
                 case ModeColumn: return item->modeName();
                 case ValueColumn:
                     return item->kind() == SchemaItem::Kind::Morph && item->mode() == Morph::SchemaName
-                            ? static_cast<Schema*>(m_schema)->fullName() : item->value();
+                            ? static_cast<Schema*>(m_schema)->fullName()
+                            : item->value().replace(" ", "·");
             }
             break;
         case Qt::EditRole:
@@ -120,6 +121,10 @@ QVariant SchemaModel::data(const QModelIndex &index, int role) const
             } else if (item->kind() == SchemaItem::Kind::Layer) {
                 QFont f;
                 f.setPointSize(14);
+                return f;
+            } else {
+                QFont f;
+                f.setPointSize(10);
                 return f;
             }
             break;
@@ -188,5 +193,5 @@ bool SchemaProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &source
 {
     auto const sourceIndex = sourceModel()->index(sourceRow, SchemaModel::ValueColumn, sourceParent);
 
-    return sourceIndex.data().toString().contains(filterRegularExpression());
+    return sourceIndex.data(Qt::EditRole).toString().contains(filterRegularExpression());
 }

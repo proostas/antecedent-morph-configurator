@@ -368,7 +368,51 @@ int Antecedent::itemType() const
 
 QString Antecedent::name() const
 {
-    switch (m_type) {
+    return symbol(m_type);
+}
+
+bool Antecedent::isChanged() const
+{
+    if (m_changed)
+        return true;
+
+    for (auto const &l : m_layers)
+        if (l->isChanged())
+            return true;
+
+    return false;
+}
+
+void Antecedent::clearChanged()
+{
+    m_changed = false;
+    for (auto &l : m_layers)
+        l->clearChanged();
+}
+
+int Antecedent::antecedentType() const
+{
+    return m_type;
+}
+
+bool Antecedent::setAntecedentNote(const QString &note)
+{
+    if (m_note == note)
+        return false;
+
+    m_note = note;
+    m_changed = true;
+    return true;
+}
+
+QString Antecedent::antecedentNote() const
+{
+    return m_note;
+}
+
+QString Antecedent::symbol(Type type)
+{
+    switch (type) {
         case A: return "A";
         case B: return "B";
         case C: return "C";
@@ -439,43 +483,150 @@ QString Antecedent::name() const
     return {};
 }
 
-bool Antecedent::isChanged() const
+QString Antecedent::ZMKCode(Type type)
 {
-    if (m_changed)
-        return true;
-
-    for (auto const &l : m_layers)
-        if (l->isChanged())
-            return true;
-
-    return false;
+    switch (type) {
+        case A: return "A";
+        case B: return "B";
+        case C: return "C";
+        case D: return "D";
+        case E: return "E";
+        case F: return "F";
+        case G: return "G";
+        case H: return "H";
+        case I: return "I";
+        case J: return "G";
+        case K: return "K";
+        case L: return "L";
+        case M: return "M";
+        case N: return "N";
+        case O: return "O";
+        case P: return "P";
+        case Q: return "Q";
+        case R: return "R";
+        case S: return "S";
+        case T: return "T";
+        case U: return "U";
+        case V: return "V";
+        case W: return "W";
+        case X: return "X";
+        case Y: return "Y";
+        case Z: return "Z";
+        case N0: return "N0";
+        case N1: return "N1";
+        case N2: return "N2";
+        case N3: return "N3";
+        case N4: return "N4";
+        case N5: return "N5";
+        case N6: return "N6";
+        case N7: return "N7";
+        case N8: return "N8";
+        case N9: return "N9";
+        case Comma: return "COMMA";
+        case Dot: return "DOT";
+        case Quote: return "SQT";
+        case Slash: return "FSLH";
+        case LBrace: return "LBRC";
+        case RBrace: return "RBRC";
+        case LParen: return "LPAR";
+        case RParen: return "RPAR";
+        case Star: return "STAR";
+        case Colon: return "COLON";
+        case Dollar: return "DLLR";
+        case Percent: return "PRCNT";
+        case Caret: return "CARET";
+        case Plus: return "PLUS";
+        case Tilda: return "TILDE";
+        case Exclamation: return "EXCL";
+        case At: return "AT";
+        case Hash: return "HASH";
+        case Pipe: return "PIPE";
+        case Ampersand: return "AMPS";
+        case Underscore: return "UNDER";
+        case LBracket: return "LBKT";
+        case RBracket: return "RBKT";
+        case Semicolon: return "SEMI";
+        case Grave: return "GRAVE";
+        case Equal: return "EQUAL";
+        case Backslash: return "BSLH";
+        case Minus: return "MINUS";
+        case Space: return "SPACE";
+    }
+    assert(false && "Should not happen");
+    return {};
 }
 
-void Antecedent::clearChanged()
+QString Antecedent::QMKCode(Type type)
 {
-    m_changed = false;
-    for (auto &l : m_layers)
-        l->clearChanged();
-}
-
-int Antecedent::antecedentType() const
-{
-    return m_type;
-}
-
-bool Antecedent::setAntecedentNote(const QString &note)
-{
-    if (m_note == note)
-        return false;
-
-    m_note = note;
-    m_changed = true;
-    return true;
-}
-
-QString Antecedent::antecedentNote() const
-{
-    return m_note;
+    switch (type) {
+        case A: return "KC_A";
+        case B: return "KC_B";
+        case C: return "KC_C";
+        case D: return "KC_D";
+        case E: return "KC_E";
+        case F: return "KC_F";
+        case G: return "KC_G";
+        case H: return "KC_H";
+        case I: return "KC_I";
+        case J: return "KC_G";
+        case K: return "KC_K";
+        case L: return "KC_L";
+        case M: return "KC_M";
+        case N: return "KC_N";
+        case O: return "KC_O";
+        case P: return "KC_P";
+        case Q: return "KC_Q";
+        case R: return "KC_R";
+        case S: return "KC_S";
+        case T: return "KC_T";
+        case U: return "KC_U";
+        case V: return "KC_V";
+        case W: return "KC_W";
+        case X: return "KC_X";
+        case Y: return "KC_Y";
+        case Z: return "KC_Z";
+        case N0: return "KC_0";
+        case N1: return "KC_1";
+        case N2: return "KC_2";
+        case N3: return "KC_3";
+        case N4: return "KC_4";
+        case N5: return "KC_5";
+        case N6: return "KC_6";
+        case N7: return "KC_7";
+        case N8: return "KC_8";
+        case N9: return "KC_9";
+        case Comma: return "KC_COMM";
+        case Dot: return "KC_DOT";
+        case Quote: return "KC_QUOT";
+        case Slash: return "KC_SLSH";
+        case LBrace: return "KC_LCBR";
+        case RBrace: return "KC_RCBR";
+        case LParen: return "KC_LPRN";
+        case RParen: return "KC_RPRN";
+        case Star: return "KC_ASTR";
+        case Colon: return "KC_COLN";
+        case Dollar: return "KC_DLR";
+        case Percent: return "KC_PERC";
+        case Caret: return "KC_CIRC";
+        case Plus: return "KC_PLUS";
+        case Tilda: return "KC_TILD";
+        case Exclamation: return "KC_EXLM";
+        case At: return "KC_AT";
+        case Hash: return "KC_HASH";
+        case Pipe: return "KC_PIPE";
+        case Ampersand: return "KC_AMPR";
+        case Underscore: return "KC_UNDS";
+        case LBracket: return "KC_LBRC";
+        case RBracket: return "KC_RBRC";
+        case Semicolon: return "KC_SCLN";
+        case Grave: return "KC_GRV";
+        case Equal: return "KC_EQL";
+        case Backslash: return "KC_BSLS";
+        case Minus: return "KC_MINS";
+        case Space: return "KC_SPC";
+    }
+    assert(false && "Should not happen");
+    return {};
 }
 
 int Antecedent::rowOf(const SchemaItem *me) const

@@ -133,6 +133,11 @@ public: // SchemaItem interface
     bool setAntecedentNote(QString const &note) override;
     QString antecedentNote() const override;
 
+public:
+    static QString symbol(Type type);
+    static QString ZMKCode(Type type);
+    static QString QMKCode(Type type);
+
 protected:
     int rowOf(SchemaItem const *me) const override;
 private:

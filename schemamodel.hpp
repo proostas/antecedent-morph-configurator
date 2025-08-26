@@ -18,7 +18,9 @@ public:
     enum Data {
         AntecedentType = Qt::UserRole,
         Note,
-        Modes
+        Modes,
+        IsLeftHand,
+        IsRightHand
     };
 
 public:
@@ -49,7 +51,14 @@ class SchemaProxyModel : public QSortFilterProxyModel
 {
     Q_OBJECT
 public:
+    enum HandFilter {BothHands, LeftHand, RightHand};
+public:
     explicit SchemaProxyModel(QObject *parent = nullptr);
+
+    void setHandFilter(int hand);
+
+private:
+    HandFilter m_hand;
 
 protected:
     bool filterAcceptsRow(int sourceRow, QModelIndex const &sourceParent) const override;

@@ -10,6 +10,7 @@ class SchemaProxyModel;
 class SchemaView;
 class LineEdit;
 class QPlainTextEdit;
+class QComboBox;
 
 class MainWindow : public QMainWindow
 {
@@ -50,6 +51,7 @@ private:
         QAction *schemaPropsAction;
         QToolBar *filterBar;
         LineEdit *regexEdit;
+        QComboBox *handSelector;
         QDockWidget *noteDockWidget;
         QPlainTextEdit *noteEdit;
     } ui;

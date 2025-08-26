@@ -17,6 +17,7 @@
 #include <QPlainTextEdit>
 #include <QCloseEvent>
 #include <QMessageBox>
+#include <QComboBox>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
@@ -35,6 +36,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui.schemaPropsAction, &QAction::triggered, this, &MainWindow::editSchemaProperties);
 
     m_proxyModel->setSourceModel(m_model);
+    connect(ui.handSelector, &QComboBox::currentIndexChanged, m_proxyModel, &SchemaProxyModel::setHandFilter);
     connect(ui.regexEdit, &QLineEdit::textChanged, m_proxyModel, qOverload<QString const &>(&SchemaProxyModel::setFilterRegularExpression));
     ui.view->setModel(m_proxyModel);
 
@@ -259,6 +261,9 @@ MainWindow::Ui::Ui(MainWindow *mainWindow)
 
     // ToolBars
     filterBar = mainWindow->addToolBar("Filter");
+    handSelector = new QComboBox;
+    handSelector->addItems({"Both hands", "Left", "Right"});
+    filterBar->addWidget(handSelector);
     regexEdit = new LineEdit;
     regexEdit->setPlaceholderText("Type regex to filter...");
     filterBar->addWidget(regexEdit);

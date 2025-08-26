@@ -58,6 +58,16 @@ bool SchemaItem::setValue(const QString &value)
     return false;
 }
 
+bool SchemaItem::isLeft() const
+{
+    return !isRight();
+}
+
+bool SchemaItem::isRight() const
+{
+    return m_parent->isRight();
+}
+
 int SchemaItem::antecedentType() const
 {
     return m_parent->antecedentType();
@@ -249,6 +259,11 @@ QString Schema::name() const
     return m_name;
 }
 
+bool Schema::isRight() const
+{
+    return false;
+}
+
 bool Schema::isChanged() const
 {
     if (m_changed)
@@ -369,6 +384,31 @@ int Antecedent::itemType() const
 QString Antecedent::name() const
 {
     return symbol(m_type);
+}
+
+bool Antecedent::isRight() const
+{
+    switch (m_type) {
+        case J:
+        case L:
+        case U:
+        case Y:
+        case Quote:
+        case M:
+        case N:
+        case E:
+        case I:
+        case O:
+        case K:
+        case H:
+        case Comma:
+        case Dot:
+        case Slash:
+        case Space:
+            return true;
+        default:
+            return false;
+    }
 }
 
 bool Antecedent::isChanged() const

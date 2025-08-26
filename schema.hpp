@@ -30,6 +30,9 @@ public:
     virtual bool isEditable() const;
     virtual bool setValue(QString const& value);
 
+    bool isLeft() const;
+    virtual bool isRight() const;
+
     virtual bool isChanged() const = 0;
     virtual void clearChanged() = 0;
 
@@ -76,6 +79,8 @@ public: // SchemaItem interface
     int childCount(int schemaType) const override;
     int itemType() const override;
     QString name() const override;
+
+    bool isRight() const override;
 
     bool isChanged() const override;
     void clearChanged() override;
@@ -126,6 +131,8 @@ public: // SchemaItem interface
     int childCount(int schemaType) const override;
     int itemType() const override;
     QString name() const override;
+
+    bool isRight() const override;
 
     bool isChanged() const override;
     void clearChanged() override;

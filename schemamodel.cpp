@@ -135,6 +135,10 @@ QVariant SchemaModel::data(const QModelIndex &index, int role) const
             return item->antecedentNote();
         case Modes:
             return item->modes();
+        case IsLeftHand:
+            return item->isLeft();
+        case IsRightHand:
+            return item->isRight();
     }
 
     return {};
@@ -183,15 +187,32 @@ SchemaItem *SchemaModel::getItem(const QModelIndex &index) const
 }
 
 SchemaProxyModel::SchemaProxyModel(QObject *parent)
-    : QSortFilterProxyModel{parent}
+    : QSortFilterProxyModel{parent},
+      m_hand{BothHands}
 {
     setRecursiveFilteringEnabled(true);
     setFilterCaseSensitivity(Qt::CaseInsensitive);
+}
+
+void SchemaProxyModel::setHandFilter(int hand)
+{
+    if (m_hand == static_cast<HandFilter>(hand))
+        return;
+
+    m_hand = static_cast<HandFilter>(hand);
+    invalidateFilter();
 }
 
 bool SchemaProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
 {
     auto const sourceIndex = sourceModel()->index(sourceRow, SchemaModel::ValueColumn, sourceParent);
 
-    return sourceIndex.data(Qt::EditRole).toString().contains(filterRegularExpression());
+    if (m_hand == BothHands && filterRegularExpression().pattern().isEmpty())
+        return true;
+
+    bool handsFilter = (m_hand == BothHands)
+                    || (m_hand == LeftHand && sourceIndex.data(SchemaModel::IsLeftHand).toBool())
+                    || (m_hand == RightHand && sourceIndex.data(SchemaModel::IsRightHand).toBool());
+
+    return handsFilter && sourceIndex.data(Qt::EditRole).toString().contains(filterRegularExpression());
 }

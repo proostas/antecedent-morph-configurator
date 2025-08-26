@@ -17,6 +17,9 @@ public:
     virtual Kind kind() const = 0;
     virtual SchemaItem *child(int row) = 0;
     virtual int childCount(int schemaType) const = 0;
+    int row() const;
+    SchemaItem *parent();
+
     virtual int itemType() const = 0;
     virtual QString name() const = 0;
     virtual QStringList modes() const;
@@ -26,8 +29,6 @@ public:
     virtual QString value() const;
     virtual bool isEditable() const;
     virtual bool setValue(QString const& value);
-    int row() const;
-    SchemaItem *parent();
 
     virtual bool isChanged() const = 0;
     virtual void clearChanged() = 0;

@@ -8,6 +8,19 @@ SchemaItem::SchemaItem(SchemaItem *parent)
 
 }
 
+int SchemaItem::row() const
+{
+    if (!m_parent)
+        return 0;
+
+    return m_parent->rowOf(this);
+}
+
+SchemaItem *SchemaItem::parent()
+{
+    return m_parent;
+}
+
 QStringList SchemaItem::modes() const
 {
     return {};
@@ -43,19 +56,6 @@ bool SchemaItem::setValue(const QString &value)
 {
     Q_UNUSED(value)
     return false;
-}
-
-int SchemaItem::row() const
-{
-    if (!m_parent)
-        return 0;
-
-    return m_parent->rowOf(this);
-}
-
-SchemaItem *SchemaItem::parent()
-{
-    return m_parent;
 }
 
 int SchemaItem::antecedentType() const

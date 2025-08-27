@@ -693,9 +693,9 @@ Layer::Layer(Type type, SchemaItem *parent)
         m_morphs.push_back(std::make_unique<Morph>(Morph::SouthEast, Morph::Text, this));
     }
     if (type == Base || type == Symbol || type == Number || type == Function) {
-        m_morphs.push_back(std::make_unique<Morph>(Morph::SouthWest, Morph::Text, this));
-        m_morphs.push_back(std::make_unique<Morph>(Morph::West, Morph::Text, this));
         m_morphs.push_back(std::make_unique<Morph>(Morph::NorthWest, Morph::Text, this));
+        m_morphs.push_back(std::make_unique<Morph>(Morph::West, Morph::Text, this));
+        m_morphs.push_back(std::make_unique<Morph>(Morph::SouthWest, Morph::Text, this));
     }
 }
 
@@ -870,12 +870,12 @@ int Morph::itemType() const
 QString Morph::name() const
 {
     switch (m_type) {
-        case NorthEast: return "NE";
-        case East: return "E";
-        case SouthEast: return "SE";
-        case SouthWest: return "SW";
-        case West: return "W";
-        case NorthWest: return "NW";
+        case NorthEast: return "↗️";
+        case East: return "➡️";
+        case SouthEast: return "↘️";
+        case NorthWest: return "↖️";
+        case West: return "⬅️";
+        case SouthWest: return "↙️";
     }
     assert(false && "Should not happen");
     return {};

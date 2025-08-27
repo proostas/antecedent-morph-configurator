@@ -204,9 +204,9 @@ public:
         NorthEast,
         East,
         SouthEast,
-        SouthWest,
+        NorthWest,
         West,
-        NorthWest
+        SouthWest
     };
     enum Mode {
         Text,

@@ -112,6 +112,7 @@ bool MainWindow::save()
     }
 
     m_schema->clearChanged();
+    ui.statusBar->showMessage(QString{"Saved to %1"}.arg(m_schema->filePath()), 4000);
 
     return true;
 }
@@ -148,6 +149,7 @@ bool MainWindow::open()
         ui.noteEdit->setEnabled(ui.view->selectionModel()->currentIndex().isValid());
 
         updateWindowTitle();
+        ui.statusBar->showMessage(QString{"Opened %1"}.arg(m_schema->filePath()), 4000);
     }
 
     return res;
@@ -174,6 +176,7 @@ void MainWindow::close()
     m_schema->clear();
     m_model->afterSchemaChange();
     updateWindowTitle();
+    ui.statusBar->showMessage("Closed schema", 4000);
 }
 
 void MainWindow::updateWindowTitle()

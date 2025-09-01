@@ -102,7 +102,7 @@ QVariant SchemaModel::data(const QModelIndex &index, int role) const
                 case NameColumn: return item->name();
                 case ModeColumn: return item->modeName();
                 case ValueColumn:
-                    return item->kind() == SchemaItem::Kind::Morph && item->mode() == Morph::SchemaName
+                    return item->kind() == SchemaItem::Kind::Morph && item->mode() == static_cast<int>(Mode::SchemaName)
                             ? static_cast<Schema*>(m_schema)->fullName()
                             : item->value().replace(" ", "·");
             }

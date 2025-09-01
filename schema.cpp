@@ -228,6 +228,26 @@ QString Schema::prefix() const
     return m_prefix;
 }
 
+bool Schema::isEmpty(LayerType layerType, MorphType morphType) const
+{
+    for (auto const &a: m_antecedents) {
+        if (!a->isEmpty(layerType, morphType))
+            return false;
+    }
+
+    return true;
+}
+
+bool Schema::isEmpty(LayerType layerType, MorphType morphType, ModType modType) const
+{
+    for (auto const &a: m_antecedents) {
+        if (!a->isEmpty(layerType, morphType, modType))
+            return false;
+    }
+
+    return true;
+}
+
 SchemaItem::Kind Schema::kind() const
 {
     return SchemaItem::Kind::Schema;
@@ -308,13 +328,13 @@ Antecedent::Antecedent(Type type, SchemaItem *parent)
       m_note{},
       m_changed{false}
 {
-    m_layers.push_back(std::make_unique<Layer>(Layer::Base, this));
-    m_layers.push_back(std::make_unique<Layer>(Layer::Mouse, this));
-    m_layers.push_back(std::make_unique<Layer>(Layer::Navigation, this));
-    m_layers.push_back(std::make_unique<Layer>(Layer::Media, this));
-    m_layers.push_back(std::make_unique<Layer>(Layer::Function, this));
-    m_layers.push_back(std::make_unique<Layer>(Layer::Number, this));
-    m_layers.push_back(std::make_unique<Layer>(Layer::Symbol, this));
+    m_layers.push_back(std::make_unique<Layer>(LayerType::Base, this));
+    m_layers.push_back(std::make_unique<Layer>(LayerType::Mouse, this));
+    m_layers.push_back(std::make_unique<Layer>(LayerType::Navigation, this));
+    m_layers.push_back(std::make_unique<Layer>(LayerType::Media, this));
+    m_layers.push_back(std::make_unique<Layer>(LayerType::Function, this));
+    m_layers.push_back(std::make_unique<Layer>(LayerType::Number, this));
+    m_layers.push_back(std::make_unique<Layer>(LayerType::Symbol, this));
 }
 
 bool Antecedent::fromJson(const QJsonObject &json)
@@ -351,6 +371,26 @@ void Antecedent::clear()
     m_changed = false;
     std::for_each(m_layers.cbegin(), m_layers.cend(),
                   [](std::unique_ptr<Layer> const &l) { l->clear(); });
+}
+
+bool Antecedent::isEmpty(LayerType layerType, MorphType morphType) const
+{
+    return m_layers[static_cast<int>(layerType)]->isEmpty(morphType);
+}
+
+bool Antecedent::isEmpty(LayerType layerType, MorphType morphType, ModType modType) const
+{
+    return m_layers[static_cast<int>(layerType)]->isEmpty(morphType, modType);
+}
+
+Morph *Antecedent::getMorph(LayerType layerType, MorphType morphType) const
+{
+    return m_layers[static_cast<int>(layerType)]->getMorph(morphType);
+}
+
+Mod *Antecedent::getMod(LayerType layerType, MorphType morphType, ModType modType) const
+{
+    return m_layers[static_cast<int>(layerType)]->getMod(morphType, modType);
 }
 
 SchemaItem::Kind Antecedent::kind() const
@@ -448,6 +488,16 @@ bool Antecedent::setAntecedentNote(const QString &note)
 QString Antecedent::antecedentNote() const
 {
     return m_note;
+}
+
+QString Antecedent::symbol() const
+{
+    return symbol(m_type);
+}
+
+QString Antecedent::zmkCode() const
+{
+    return ZMKCode(m_type);
 }
 
 QString Antecedent::symbol(Type type)
@@ -682,26 +732,26 @@ int Antecedent::rowOf(const SchemaItem *me) const
     return -1;
 }
 
-Layer::Layer(Type type, SchemaItem *parent)
+Layer::Layer(LayerType type, SchemaItem *parent)
     : SchemaItem{parent},
       m_type{type},
       m_morphs{}
 {
-    if (type == Base || type == Mouse || type == Navigation || type == Media) {
-        m_morphs.push_back(std::make_unique<Morph>(Morph::NorthEast, Morph::Text, this));
-        m_morphs.push_back(std::make_unique<Morph>(Morph::East, Morph::Text, this));
-        m_morphs.push_back(std::make_unique<Morph>(Morph::SouthEast, Morph::Text, this));
+    if (type == LayerType::Base || type == LayerType::Mouse || type == LayerType::Navigation || type == LayerType::Media) {
+        m_morphs.push_back(std::make_unique<Morph>(MorphType::NorthEast, Mode::Text, this));
+        m_morphs.push_back(std::make_unique<Morph>(MorphType::East, Mode::Text, this));
+        m_morphs.push_back(std::make_unique<Morph>(MorphType::SouthEast, Mode::Text, this));
     }
-    if (type == Base || type == Symbol || type == Number || type == Function) {
-        m_morphs.push_back(std::make_unique<Morph>(Morph::NorthWest, Morph::Text, this));
-        m_morphs.push_back(std::make_unique<Morph>(Morph::West, Morph::Text, this));
-        m_morphs.push_back(std::make_unique<Morph>(Morph::SouthWest, Morph::Text, this));
+    if (type == LayerType::Base || type == LayerType::Symbol || type == LayerType::Number || type == LayerType::Function) {
+        m_morphs.push_back(std::make_unique<Morph>(MorphType::NorthWest, Mode::Text, this));
+        m_morphs.push_back(std::make_unique<Morph>(MorphType::West, Mode::Text, this));
+        m_morphs.push_back(std::make_unique<Morph>(MorphType::SouthWest, Mode::Text, this));
     }
 }
 
 bool Layer::fromJson(const QJsonObject &json)
 {
-    m_type = static_cast<Type>(json["type"].toInt());
+    m_type = static_cast<LayerType>(json["type"].toInt());
     int i{0};
     auto const morphs = json["morphs"].toArray();
     for (auto const &m: morphs) {
@@ -718,7 +768,7 @@ QJsonObject Layer::toJson() const
         morphs << m->toJson();
     }
     QJsonObject layer;
-    layer["type"] = m_type;
+    layer["type"] = int(m_type);
     layer["morphs"] = morphs;
     return layer;
 }
@@ -727,6 +777,54 @@ void Layer::clear()
 {
     std::for_each(m_morphs.cbegin(), m_morphs.cend(),
                   [](std::unique_ptr<Morph> const &m) { m->clear(); });
+}
+
+bool Layer::isEmpty(MorphType morphType) const
+{
+    int idx = int(morphType);
+    if (m_type == LayerType::Symbol
+      || m_type == LayerType::Number
+      || m_type == LayerType::Function)
+    {
+        idx -= 3;
+    }
+    return m_morphs[idx]->isEmpty();
+}
+
+bool Layer::isEmpty(MorphType morphType, ModType modType) const
+{
+    int idx = int(morphType);
+    if (m_type == LayerType::Symbol
+      || m_type == LayerType::Number
+      || m_type == LayerType::Function)
+    {
+        idx -= 3;
+    }
+    return m_morphs[idx]->isEmpty(modType);
+}
+
+Morph *Layer::getMorph(MorphType morphType) const
+{
+    int idx = int(morphType);
+    if (m_type == LayerType::Symbol
+      || m_type == LayerType::Number
+      || m_type == LayerType::Function)
+    {
+        idx -= 3;
+    }
+    return m_morphs[idx].get();
+}
+
+Mod *Layer::getMod(MorphType morphType, ModType modType) const
+{
+    int idx = int(morphType);
+    if (m_type == LayerType::Symbol
+      || m_type == LayerType::Number
+      || m_type == LayerType::Function)
+    {
+        idx -= 3;
+    }
+    return m_morphs[idx]->getMod(modType);
 }
 
 SchemaItem::Kind Layer::kind() const
@@ -747,19 +845,19 @@ int Layer::childCount(int schemaType) const
 
 int Layer::itemType() const
 {
-    return m_type;
+    return int(m_type);
 }
 
 QString Layer::name() const
 {
     switch (m_type) {
-        case Base: return "Base";
-        case Mouse: return "Mouse";
-        case Navigation: return "Navigation";
-        case Media: return "Media";
-        case Function: return "Function";
-        case Number: return "Number";
-        case Symbol: return "Symbol";
+        case LayerType::Base: return "Base";
+        case LayerType::Mouse: return "Mouse";
+        case LayerType::Navigation: return "Navigation";
+        case LayerType::Media: return "Media";
+        case LayerType::Function: return "Function";
+        case LayerType::Number: return "Number";
+        case LayerType::Symbol: return "Symbol";
     }
 
     assert(false && "Should not happen");
@@ -794,7 +892,7 @@ int Layer::rowOf(const SchemaItem *me) const
     return -1;
 }
 
-Morph::Morph(Type type, Mode mode, SchemaItem *parent)
+Morph::Morph(MorphType type, Mode mode, SchemaItem *parent)
     : SchemaItem{parent},
       m_type{type},
       m_mode{mode},
@@ -802,14 +900,14 @@ Morph::Morph(Type type, Mode mode, SchemaItem *parent)
       m_value{},
       m_changed{false}
 {
-    m_mods.push_back(std::make_unique<Mod>(Mod::Control, Mod::Replace, this));
-    m_mods.push_back(std::make_unique<Mod>(Mod::Alt, Mod::Replace, this));
-    m_mods.push_back(std::make_unique<Mod>(Mod::GUI, Mod::Replace, this));
+    m_mods.push_back(std::make_unique<Mod>(ModType::Control, Mode::Text, this));
+    m_mods.push_back(std::make_unique<Mod>(ModType::Alt, Mode::Text, this));
+    m_mods.push_back(std::make_unique<Mod>(ModType::GUI, Mode::Text, this));
 }
 
 bool Morph::fromJson(const QJsonObject &json)
 {
-    m_type = static_cast<Type>(json["type"].toInt());
+    m_type = static_cast<MorphType>(json["type"].toInt());
     m_mode = static_cast<Mode>(json["mode"].toInt());
     m_value = json["value"].toString();
     m_changed = false;
@@ -830,8 +928,8 @@ QJsonObject Morph::toJson() const
         mods << m->toJson();
     }
     QJsonObject morph;
-    morph["type"] = m_type;
-    morph["mode"] = m_mode;
+    morph["type"] = static_cast<int>(m_type);
+    morph["mode"] = static_cast<int>(m_mode);
     morph["value"] = m_value;
     morph["mods"] = mods;
     return morph;
@@ -839,11 +937,42 @@ QJsonObject Morph::toJson() const
 
 void Morph::clear()
 {
-    m_mode = Text;
+    m_mode = Mode::Text;
     m_value.clear();
     m_changed = false;
     std::for_each(m_mods.cbegin(), m_mods.cend(),
                   [](std::unique_ptr<Mod> const &m) { m->clear(); });
+}
+
+bool Morph::isEmpty() const
+{
+    if (m_mode == Mode::SchemaName)
+        return false;
+
+    return m_value.isEmpty();
+}
+
+bool Morph::isEmpty(ModType modType) const
+{
+    return m_mods[static_cast<int>(modType)]->isEmpty();
+}
+
+bool Morph::isValid() const
+{
+    if (m_mode == Mode::SchemaName)
+        return true;
+
+    return m_value.size() != 1;
+}
+
+Mod *Morph::getMod(ModType modType) const
+{
+    return m_mods[static_cast<int>(modType)].get();
+}
+
+bool Morph::isSingleLettered(QString const &symbol) const
+{
+    return m_mode == Mode::Text && m_value.length() == 2 && m_value.first(1).toLower() == symbol.toLower();
 }
 
 SchemaItem::Kind Morph::kind() const
@@ -864,18 +993,18 @@ int Morph::childCount(int schemaType) const
 
 int Morph::itemType() const
 {
-    return m_type;
+    return static_cast<int>(m_type);
 }
 
 QString Morph::name() const
 {
     switch (m_type) {
-        case NorthEast: return "↗️";
-        case East: return "➡️";
-        case SouthEast: return "↘️";
-        case NorthWest: return "↖️";
-        case West: return "⬅️";
-        case SouthWest: return "↙️";
+        case MorphType::NorthEast: return "↗️";
+        case MorphType::East: return "➡️";
+        case MorphType::SouthEast: return "↘️";
+        case MorphType::NorthWest: return "↖️";
+        case MorphType::West: return "⬅️";
+        case MorphType::SouthWest: return "↙️";
     }
     assert(false && "Should not happen");
     return {};
@@ -888,7 +1017,7 @@ QStringList Morph::modes() const
 
 bool Morph::setMode(int mode)
 {
-    if (m_mode == mode)
+    if (m_mode == static_cast<Mode>(mode))
         return false;
 
     m_mode = static_cast<Mode>(mode);
@@ -898,15 +1027,15 @@ bool Morph::setMode(int mode)
 
 int Morph::mode() const
 {
-    return m_mode;
+    return static_cast<int>(m_mode);
 }
 
 QString Morph::modeName() const
 {
     switch (m_mode) {
-        case Text: return "Text";
-        case MacroName: return "Macro";
-        case SchemaName: return "SchName";
+        case Mode::Text: return "Text";
+        case Mode::MacroName: return "Macro";
+        case Mode::SchemaName: return "SchName";
     }
     assert(false && "Should not happen");
     return {};
@@ -964,7 +1093,7 @@ int Morph::rowOf(const SchemaItem *me) const
     return -1;
 }
 
-Mod::Mod(Type type, Mode mode, SchemaItem *parent)
+Mod::Mod(ModType type, Mode mode, SchemaItem *parent)
     : SchemaItem{parent},
       m_type{type},
       m_mode{mode},
@@ -976,7 +1105,7 @@ Mod::Mod(Type type, Mode mode, SchemaItem *parent)
 
 bool Mod::fromJson(const QJsonObject &json)
 {
-    m_type = static_cast<Type>(json["type"].toInt());
+    m_type = static_cast<ModType>(json["type"].toInt());
     m_mode = static_cast<Mode>(json["mode"].toInt());
     m_value = json["value"].toString();
     m_changed = false;
@@ -986,17 +1115,38 @@ bool Mod::fromJson(const QJsonObject &json)
 QJsonObject Mod::toJson() const
 {
     QJsonObject mod;
-    mod["type"] = m_type;
-    mod["mode"] = m_mode;
+    mod["type"] = static_cast<int>(m_type);
+    mod["mode"] = static_cast<int>(m_mode);
     mod["value"] = m_value;
     return mod;
 }
 
 void Mod::clear()
 {
-    m_mode = Replace;
+    m_mode = Mode::Text;
     m_value.clear();
     m_changed = false;
+}
+
+bool Mod::isEmpty() const
+{
+    if (m_mode == Mode::SchemaName)
+        return false;
+
+    return m_value.isEmpty();
+}
+
+bool Mod::isValid() const
+{
+    if (m_mode == Mode::SchemaName)
+        return true;
+
+    return m_value.size() != 1;
+}
+
+bool Mod::isSingleLettered(const QString &symbol) const
+{
+    return m_mode == Mode::Text && m_value.length() == 2 && m_value.first(1).toLower() == symbol.toLower();
 }
 
 SchemaItem::Kind Mod::kind() const
@@ -1017,15 +1167,15 @@ int Mod::childCount(int schemaType) const
 
 int Mod::itemType() const
 {
-    return m_type;
+    return static_cast<int>(m_type);
 }
 
 QString Mod::name() const
 {
     switch (m_type) {
-        case Control: return "Ctrl";
-        case Alt: return "Alt";
-        case GUI: return "GUI";
+        case ModType::Control: return "Ctrl";
+        case ModType::Alt: return "Alt";
+        case ModType::GUI: return "GUI";
     }
     assert(false && "Should not happen");
     return {};
@@ -1033,12 +1183,12 @@ QString Mod::name() const
 
 QStringList Mod::modes() const
 {
-    return {"Replace", "Append"};
+    return m_parent->modes();
 }
 
 bool Mod::setMode(int mode)
 {
-    if (m_mode == mode)
+    if (m_mode == static_cast<Mode>(mode))
         return false;
 
     m_mode = static_cast<Mode>(mode);
@@ -1048,14 +1198,15 @@ bool Mod::setMode(int mode)
 
 int Mod::mode() const
 {
-    return m_mode;
+    return static_cast<int>(m_mode);
 }
 
 QString Mod::modeName() const
 {
     switch (m_mode) {
-        case Replace: return "Replace";
-        case Append: return "Append";
+        case Mode::Text: return "Text";
+        case Mode::MacroName: return "Macro";
+        case Mode::SchemaName: return "SchName";
     }
     assert(false && "Should not happen");
     return {};

@@ -18,6 +18,7 @@
 #include <QCloseEvent>
 #include <QMessageBox>
 #include <QComboBox>
+#include "codegeneratordialog.hpp"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
@@ -34,6 +35,12 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui.closeAction, &QAction::triggered, this, &MainWindow::close);
     connect(ui.quitAction, &QAction::triggered, qApp, &QApplication::quit);
     connect(ui.schemaPropsAction, &QAction::triggered, this, &MainWindow::editSchemaProperties);
+    connect(ui.zmkGeneratorAction, &QAction::triggered, this, [this](){
+        CodeGeneratorDialog{m_schema.get(), CodeGenerator::ZMKFirmware, this}.exec();
+    });
+    connect(ui.qmkGeneratorAction, &QAction::triggered, this, [this](){
+        CodeGeneratorDialog{m_schema.get(), CodeGenerator::QMKFirmware, this}.exec();
+    });
 
     m_proxyModel->setSourceModel(m_model);
     connect(ui.handSelector, &QComboBox::currentIndexChanged, m_proxyModel, &SchemaProxyModel::setHandFilter);
@@ -222,6 +229,9 @@ MainWindow::Ui::Ui(MainWindow *mainWindow)
       quitAction{new QAction{mainWindow}},
       settingsMenu{new QMenu{menuBar}},
       schemaPropsAction{new QAction{mainWindow}},
+      generatorMenu{new QMenu{menuBar}},
+      zmkGeneratorAction{new QAction{mainWindow}},
+      qmkGeneratorAction{new QAction{mainWindow}},
       noteDockWidget{new QDockWidget{"Antecedent Note", mainWindow}},
       noteEdit{new QPlainTextEdit}
 {
@@ -261,6 +271,15 @@ MainWindow::Ui::Ui(MainWindow *mainWindow)
 
     schemaPropsAction->setText("Schema properties");
     settingsMenu->addAction(schemaPropsAction);
+
+    generatorMenu->setTitle("Generator");
+    menuBar->addAction(generatorMenu->menuAction());
+
+    zmkGeneratorAction->setText("Generate ZMK code");
+    generatorMenu->addAction(zmkGeneratorAction);
+
+    qmkGeneratorAction->setText("Generate QMK code");
+    generatorMenu->addAction(qmkGeneratorAction);
 
     // ToolBars
     filterBar = mainWindow->addToolBar("Filter");

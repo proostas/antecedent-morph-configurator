@@ -18,6 +18,10 @@ qt_add_executable(antecedent-morph-configurator
     schemaview.hpp schemaview.cpp
     schemapropertiesdialog.hpp schemapropertiesdialog.cpp
     lineedit.hpp lineedit.cpp
+    codegeneratordialog.hpp codegeneratordialog.cpp
+    codegenerator.hpp codegenerator.cpp
+    zmkcodegenerator.hpp zmkcodegenerator.cpp
+    qmkcodegenerator.hpp qmkcodegenerator.cpp
 )
 
 target_link_libraries(antecedent-morph-configurator

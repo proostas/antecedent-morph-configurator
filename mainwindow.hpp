@@ -49,6 +49,9 @@ private:
         QAction *quitAction;
         QMenu *settingsMenu;
         QAction *schemaPropsAction;
+        QMenu *generatorMenu;
+        QAction *zmkGeneratorAction;
+        QAction *qmkGeneratorAction;
         QToolBar *filterBar;
         LineEdit *regexEdit;
         QComboBox *handSelector;

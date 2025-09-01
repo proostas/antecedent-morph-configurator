@@ -4,6 +4,37 @@
 #include <QString>
 #include <QJsonDocument>
 
+enum class LayerType {
+    Base,
+    Mouse,
+    Navigation,
+    Media,
+    Function,
+    Number,
+    Symbol
+};
+
+enum class MorphType {
+    NorthEast,
+    East,
+    SouthEast,
+    NorthWest,
+    West,
+    SouthWest
+};
+
+enum class ModType {
+    Control,
+    Alt,
+    GUI
+};
+
+enum class Mode {
+    Text,
+    MacroName,
+    SchemaName
+};
+
 class Antecedent;
 
 class SchemaItem
@@ -43,12 +74,14 @@ public:
 protected:
     virtual int rowOf(SchemaItem const *me) const = 0;
 
-private:
+protected:
     SchemaItem *m_parent;
 };
 
 class Schema : public SchemaItem
 {
+public:
+    friend class ZmkCodeGenerator;
 public:
     enum Type {Flat, Deep};
 public:
@@ -72,6 +105,9 @@ public:
     Type type() const;
     bool setPrefix(QString const &prefix);
     QString prefix() const;
+
+    bool isEmpty(LayerType layerType, MorphType morphType) const;
+    bool isEmpty(LayerType layerType, MorphType morphType, ModType modType) const;
 
 public: // SchemaItem interface
     SchemaItem::Kind kind() const override;
@@ -101,9 +137,13 @@ private:
 };
 
 class Layer;
+class Morph;
+class Mod;
 
 class Antecedent : public SchemaItem
 {
+public:
+    friend class ZmkCodeGenerator;
 public:
     enum Type {
         A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z,
@@ -125,6 +165,12 @@ public:
 
     Type type() const;
 
+    bool isEmpty(LayerType layerType, MorphType morphType) const;
+    bool isEmpty(LayerType layerType, MorphType morphType, ModType modType) const;
+
+    Morph *getMorph(LayerType layerType, MorphType morphType) const;
+    Mod *getMod(LayerType layerType, MorphType morphType, ModType modType) const;
+
 public: // SchemaItem interface
     SchemaItem::Kind kind() const override;
     SchemaItem *child(int row) override;
@@ -141,6 +187,9 @@ public: // SchemaItem interface
     bool setAntecedentNote(QString const &note) override;
     QString antecedentNote() const override;
 
+    QString symbol() const;
+    QString zmkCode() const;
+
 public:
     static QString symbol(Type type);
     static QString ZMKCode(Type type);
@@ -155,27 +204,25 @@ private:
     bool m_changed;
 };
 
-class Morph;
-
 class Layer : public SchemaItem
 {
 public:
-    enum Type {
-        Base,
-        Mouse,
-        Navigation,
-        Media,
-        Function,
-        Number,
-        Symbol
-    };
+    friend class ZmkCodeGenerator;
 public:
-    explicit Layer(Type type, SchemaItem *parent);
+
+public:
+    explicit Layer(LayerType type, SchemaItem *parent);
     ~Layer() override = default;
 
     bool fromJson(QJsonObject const &json);
     QJsonObject toJson() const;
     void clear();
+
+    bool isEmpty(MorphType morphType) const;
+    bool isEmpty(MorphType morphType, ModType modType) const;
+
+    Morph *getMorph(MorphType morphType) const;
+    Mod *getMod(MorphType morphType, ModType modType) const;
 
 public: // SchemaItem interface
     SchemaItem::Kind kind() const override;
@@ -191,35 +238,30 @@ protected:
     int rowOf(SchemaItem const *me) const override;
 
 private:
-    Type m_type;
+    LayerType m_type;
     std::vector<std::unique_ptr<Morph>> m_morphs;
 };
-
-class Mod;
 
 class Morph : public SchemaItem
 {
 public:
-    enum Type {
-        NorthEast,
-        East,
-        SouthEast,
-        NorthWest,
-        West,
-        SouthWest
-    };
-    enum Mode {
-        Text,
-        MacroName,
-        SchemaName
-    };
+    friend class ZmkCodeGenerator;
+
 public:
-    explicit Morph(Type type, Mode mode, SchemaItem *parent);
+    explicit Morph(MorphType type, Mode mode, SchemaItem *parent);
     ~Morph() override = default;
 
     bool fromJson(QJsonObject const &json);
     QJsonObject toJson() const;
     void clear();
+
+    bool isEmpty() const;
+    bool isEmpty(ModType modType) const;
+    bool isValid() const;
+
+    Mod *getMod(ModType modType) const;
+
+    bool isSingleLettered(const QString &symbol) const;
 
 public: // SchemaItem interface
     SchemaItem::Kind kind() const override;
@@ -242,7 +284,7 @@ protected:
     int rowOf(SchemaItem const *me) const override;
 
 private:
-    Type m_type;
+    MorphType m_type;
     Mode m_mode;
     std::vector<std::unique_ptr<Mod>> m_mods;
     QString m_value;
@@ -252,22 +294,20 @@ private:
 class Mod : public SchemaItem
 {
 public:
-    enum Type {
-        Control,
-        Alt,
-        GUI
-    };
-    enum Mode {
-        Replace,
-        Append
-    };
+    friend class ZmkCodeGenerator;
+
 public:
-    explicit Mod(Type type, Mode mode, SchemaItem *parent);
+    explicit Mod(ModType type, Mode mode, SchemaItem *parent);
     ~Mod() override = default;
 
     bool fromJson(QJsonObject const &json);
     QJsonObject toJson() const;
     void clear();
+
+    bool isEmpty() const;
+    bool isValid() const;
+
+    bool isSingleLettered(QString const &symbol) const;
 
 public: // SchemaItem interface
     SchemaItem::Kind kind() const override;
@@ -290,7 +330,7 @@ protected:
     int rowOf(SchemaItem const *me) const override;
 
 private:
-    Type m_type;
+    ModType m_type;
     Mode m_mode;
     QString m_value;
     bool m_changed;

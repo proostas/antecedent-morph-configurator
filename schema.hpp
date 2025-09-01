@@ -35,6 +35,16 @@ enum class Mode {
     SchemaName
 };
 
+enum Modifier {
+    NoModifier,
+    LCTRL,
+    RCTRL,
+    LALT,
+    RALT,
+    LGUI,
+    RGUI
+ };
+
 class Antecedent;
 
 class SchemaItem
@@ -70,6 +80,8 @@ public:
     virtual int antecedentType() const;
     virtual bool setAntecedentNote(QString const &note);
     virtual QString antecedentNote() const;
+
+    virtual Modifier pressedModifier() const;
 
 protected:
     virtual int rowOf(SchemaItem const *me) const = 0;
@@ -325,6 +337,8 @@ public: // SchemaItem interface
 
     bool isChanged() const override;
     void clearChanged() override;
+
+     Modifier pressedModifier() const override;
 
 protected:
     int rowOf(SchemaItem const *me) const override;

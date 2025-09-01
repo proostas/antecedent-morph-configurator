@@ -83,6 +83,11 @@ QString SchemaItem::antecedentNote() const
     return m_parent->antecedentNote();
 }
 
+Modifier SchemaItem::pressedModifier() const
+{
+    return NoModifier;
+}
+
 Schema::Schema(Type type, SchemaItem *parent)
     : SchemaItem{parent},
       m_filePath{},
@@ -1240,6 +1245,38 @@ bool Mod::isChanged() const
 void Mod::clearChanged()
 {
     m_changed = false;
+}
+
+Modifier Mod::pressedModifier() const
+{
+    switch (static_cast<MorphType>(m_parent->itemType())) {
+        case MorphType::NorthEast:
+        case MorphType::East:
+        case MorphType::SouthEast:
+            switch (m_type) {
+                case ModType::Control:
+                    return LCTRL;
+                case ModType::Alt:
+                    return LALT;
+                case ModType::GUI:
+                    return LGUI;
+            }
+            break;
+        case MorphType::NorthWest:
+        case MorphType::West:
+        case MorphType::SouthWest:
+            switch (m_type) {
+                case ModType::Control:
+                    return RCTRL;
+                case ModType::Alt:
+                    return RALT;
+                case ModType::GUI:
+                    return RGUI;
+            }
+            break;
+    }
+    assert(false && "Should not happen");
+    return NoModifier;
 }
 
 int Mod::rowOf(const SchemaItem *me) const

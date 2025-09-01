@@ -384,7 +384,7 @@ void ZmkCodeGenerator::generateMacros(QTextStream &out)
                 break;
         }
 
-        out << buildMacro(m->symbol, m->label, val, m->item->kind() == SchemaItem::Kind::Mod);
+        out << buildMacro(m->symbol, m->label, val, m->item->pressedModifier());
     }
     out << QString{}.fill(' ', 4) << "};\n";
 }
@@ -897,7 +897,7 @@ QString ZmkCodeGenerator::buildMacroLabel(const QString &value, QHash<QString,bo
     return label + (postfix ? QString::number(postfix) : QString{});
 }
 
-QString ZmkCodeGenerator::buildMacro(const QString &symbol, const QString &label, const QString &value, bool ignoreMods) const
+QString ZmkCodeGenerator::buildMacro(const QString &symbol, const QString &label, const QString &value, Modifier modToIgnore) const
 {
     static QString tmpl{R"TMPL(am%1_%2: am%1_%2 {
             compatible = "zmk,behavior-macro";
@@ -921,11 +921,30 @@ QString ZmkCodeGenerator::buildMacro(const QString &symbol, const QString &label
     }
 
     QString releaseMods{};
-    if (ignoreMods) {
-        releaseMods += "<&macro_release";
-        auto const mods = QStringList{} << "LCTRL" << "RCTRL" << "LALT" << "RALT" << "LGUI" << "RGUI";
-        for (auto const &m: mods)
-            releaseMods += QString{" &kp %1"}.arg(m);
+    if (modToIgnore != NoModifier) {
+        releaseMods += "<&macro_release &kp ";
+        switch (modToIgnore) {
+            case LCTRL:
+                releaseMods += "LCTRL";
+                break;
+            case RCTRL:
+                releaseMods += "RCTRL";
+                break;
+            case LALT:
+                releaseMods += "LALT";
+                break;
+            case RALT:
+                releaseMods += "RALT";
+                break;
+            case LGUI:
+                releaseMods += "LGUI";
+                break;
+            case RGUI:
+                releaseMods += "RGUI";
+                break;
+            case NoModifier:
+                break;
+        }
         releaseMods += ">";
     }
 

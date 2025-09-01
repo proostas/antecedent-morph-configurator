@@ -30,7 +30,7 @@ private:
 private:
     QString buildBinding(bool isSingleLettered, QString const &macroLabel, const QString &value) const;
     QString buildMacroLabel(QString const &value, QHash<QString, bool> &usedLabels) const;
-    QString buildMacro(QString const &symbol, QString const &label, const QString &value, bool ignoreMods = false) const;
+    QString buildMacro(QString const &symbol, QString const &label, const QString &value, Modifier modToIgnore) const;
     QString buildBehavior(LayerType layerType, MorphType morphType, ModType modType,
                           QString const &bindings, QString const &antecedents) const;
     QString buildBehavior(LayerType layerType, MorphType morphType,

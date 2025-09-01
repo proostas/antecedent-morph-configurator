@@ -384,7 +384,7 @@ void ZmkCodeGenerator::generateMacros(QTextStream &out)
                 break;
         }
 
-        out << buildMacro(m->symbol, m->label, val);
+        out << buildMacro(m->symbol, m->label, val, m->item->kind() == SchemaItem::Kind::Mod);
     }
     out << QString{}.fill(' ', 4) << "};\n";
 }
@@ -897,7 +897,7 @@ QString ZmkCodeGenerator::buildMacroLabel(const QString &value, QHash<QString,bo
     return label + (postfix ? QString::number(postfix) : QString{});
 }
 
-QString ZmkCodeGenerator::buildMacro(const QString &symbol, const QString &label, const QString &value) const
+QString ZmkCodeGenerator::buildMacro(const QString &symbol, const QString &label, const QString &value, bool ignoreMods) const
 {
     static QString tmpl{R"TMPL(am%1_%2: am%1_%2 {
             compatible = "zmk,behavior-macro";
@@ -905,7 +905,7 @@ QString ZmkCodeGenerator::buildMacro(const QString &symbol, const QString &label
             wait-ms = <U_ANTMORPH_MACRO_WAIT>;
             tap-ms = <U_ANTMORPH_MACRO_TAP>;
             // %3%4
-            bindings = <%5>;
+            bindings = %5;
         };)TMPL"};
 
     QString out = tmpl;
@@ -920,6 +920,15 @@ QString ZmkCodeGenerator::buildMacro(const QString &symbol, const QString &label
         firstOp = "&kp BSPC ";
     }
 
+    QString releaseMods{};
+    if (ignoreMods) {
+        releaseMods += "<&macro_release";
+        auto const mods = QStringList{} << "LCTRL" << "RCTRL" << "LALT" << "RALT" << "LGUI" << "RGUI";
+        for (auto const &m: mods)
+            releaseMods += QString{" &kp %1"}.arg(m);
+        releaseMods += ">";
+    }
+
     QString bindings;
     for (auto const &l: val.split(QString())) {
         if (l.isEmpty())
@@ -927,8 +936,10 @@ QString ZmkCodeGenerator::buildMacro(const QString &symbol, const QString &label
 
         bindings += QString("&kp ") + zmkKeycode(l) + " ";
     }
+    QString taps = QString{"<&macro_tap %1>"}.arg(firstOp + bindings.trimmed());
+    QString sequence = (!releaseMods.isEmpty() ? releaseMods + ", " : "") + taps;
 
-    return out.arg(m_schema->prefix(), label, pre, val, firstOp + bindings.trimmed()).prepend(QString{}.fill(' ', 8)).append("\n");
+    return out.arg(m_schema->prefix(), label, pre, val, sequence).prepend(QString{}.fill(' ', 8)).append("\n");
 }
 
 QString ZmkCodeGenerator::buildBehavior(LayerType layerType, MorphType morphType, ModType modType,

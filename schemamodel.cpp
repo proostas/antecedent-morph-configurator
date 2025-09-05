@@ -139,6 +139,8 @@ QVariant SchemaModel::data(const QModelIndex &index, int role) const
             return item->isLeft();
         case IsRightHand:
             return item->isRight();
+        case MorphType:
+            return item->morphType();
     }
 
     return {};
@@ -188,7 +190,8 @@ SchemaItem *SchemaModel::getItem(const QModelIndex &index) const
 
 SchemaProxyModel::SchemaProxyModel(QObject *parent)
     : QSortFilterProxyModel{parent},
-      m_hand{BothHands}
+      m_hand{BothHands},
+      m_morphType{-1}
 {
     setRecursiveFilteringEnabled(true);
     setFilterCaseSensitivity(Qt::CaseInsensitive);
@@ -203,16 +206,28 @@ void SchemaProxyModel::setHandFilter(int hand)
     invalidateFilter();
 }
 
+void SchemaProxyModel::setMorphType(int morphType)
+{
+    if (m_morphType == morphType)
+        return;
+
+    m_morphType = morphType;
+    invalidateFilter();
+}
+
 bool SchemaProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
 {
     auto const sourceIndex = sourceModel()->index(sourceRow, SchemaModel::ValueColumn, sourceParent);
 
-    if (m_hand == BothHands && filterRegularExpression().pattern().isEmpty())
+    if (m_hand == BothHands && m_morphType == -1 && filterRegularExpression().pattern().isEmpty())
         return true;
 
     bool handsFilter = (m_hand == BothHands)
                     || (m_hand == LeftHand && sourceIndex.data(SchemaModel::IsLeftHand).toBool())
                     || (m_hand == RightHand && sourceIndex.data(SchemaModel::IsRightHand).toBool());
 
-    return handsFilter && sourceIndex.data(Qt::EditRole).toString().contains(filterRegularExpression());
+    bool morphTypeFilter = (m_morphType == -1)
+                        || (m_morphType == sourceIndex.data(SchemaModel::MorphType).toInt());
+
+    return handsFilter && morphTypeFilter && sourceIndex.data(Qt::EditRole).toString().contains(filterRegularExpression());
 }

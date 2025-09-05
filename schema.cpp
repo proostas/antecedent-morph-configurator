@@ -68,6 +68,11 @@ bool SchemaItem::isRight() const
     return m_parent->isRight();
 }
 
+int SchemaItem::morphType() const
+{
+    return -2;
+}
+
 int SchemaItem::antecedentType() const
 {
     return m_parent->antecedentType();
@@ -1066,6 +1071,11 @@ bool Morph::setValue(const QString &value)
     return true;
 }
 
+int Morph::morphType() const
+{
+    return int(m_type);
+}
+
 bool Morph::isChanged() const
 {
     if (m_changed)
@@ -1235,6 +1245,11 @@ bool Mod::setValue(const QString &value)
     m_value = value;
     m_changed = true;
     return true;
+}
+
+int Mod::morphType() const
+{
+    return m_parent->morphType();
 }
 
 bool Mod::isChanged() const

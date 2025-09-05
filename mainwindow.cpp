@@ -44,6 +44,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     m_proxyModel->setSourceModel(m_model);
     connect(ui.handSelector, &QComboBox::currentIndexChanged, m_proxyModel, &SchemaProxyModel::setHandFilter);
+    connect(ui.morphTypeSelector, &QComboBox::currentIndexChanged, this, [this](int index){
+        m_proxyModel->setMorphType(ui.morphTypeSelector->itemData(index).toInt());
+    });
     connect(ui.regexEdit, &QLineEdit::textChanged, m_proxyModel, qOverload<QString const &>(&SchemaProxyModel::setFilterRegularExpression));
     ui.view->setModel(m_proxyModel);
 
@@ -283,9 +286,21 @@ MainWindow::Ui::Ui(MainWindow *mainWindow)
 
     // ToolBars
     filterBar = mainWindow->addToolBar("Filter");
+
     handSelector = new QComboBox;
     handSelector->addItems({"Both hands", "Left", "Right"});
     filterBar->addWidget(handSelector);
+
+    morphTypeSelector = new QComboBox;
+    morphTypeSelector->addItem("MT?", -1);
+    morphTypeSelector->addItem("↗️", int(MorphType::NorthEast));
+    morphTypeSelector->addItem("➡️", int(MorphType::East));
+    morphTypeSelector->addItem("↘️", int(MorphType::SouthEast));
+    morphTypeSelector->addItem("↖️", int(MorphType::NorthWest));
+    morphTypeSelector->addItem("⬅️", int(MorphType::West));
+    morphTypeSelector->addItem("↙️", int(MorphType::SouthWest));
+    filterBar->addWidget(morphTypeSelector);
+
     regexEdit = new LineEdit;
     regexEdit->setPlaceholderText("Type regex to filter...");
     filterBar->addWidget(regexEdit);

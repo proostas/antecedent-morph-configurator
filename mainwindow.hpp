@@ -55,6 +55,7 @@ private:
         QToolBar *filterBar;
         LineEdit *regexEdit;
         QComboBox *handSelector;
+        QComboBox *morphTypeSelector;
         QDockWidget *noteDockWidget;
         QPlainTextEdit *noteEdit;
     } ui;

@@ -73,6 +73,7 @@ public:
 
     bool isLeft() const;
     virtual bool isRight() const;
+    virtual int morphType() const;
 
     virtual bool isChanged() const = 0;
     virtual void clearChanged() = 0;
@@ -289,6 +290,8 @@ public: // SchemaItem interface
     bool isEditable() const override;
     bool setValue(QString const& value) override;
 
+    int morphType() const override;
+
     bool isChanged() const override;
     void clearChanged() override;
 
@@ -334,6 +337,8 @@ public: // SchemaItem interface
     QString value() const override;
     bool isEditable() const override;
     bool setValue(QString const& value) override;
+
+    int morphType() const override;
 
     bool isChanged() const override;
     void clearChanged() override;

@@ -20,7 +20,8 @@ public:
         Note,
         Modes,
         IsLeftHand,
-        IsRightHand
+        IsRightHand,
+        MorphType
     };
 
 public:
@@ -56,9 +57,11 @@ public:
     explicit SchemaProxyModel(QObject *parent = nullptr);
 
     void setHandFilter(int hand);
+    void setMorphType(int morphType);
 
 private:
     HandFilter m_hand;
+    int m_morphType;
 
 protected:
     bool filterAcceptsRow(int sourceRow, QModelIndex const &sourceParent) const override;

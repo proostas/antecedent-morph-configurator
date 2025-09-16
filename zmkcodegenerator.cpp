@@ -948,6 +948,29 @@ QString ZmkCodeGenerator::buildMacro(const QString &symbol, const QString &label
         releaseMods += ">";
     }
 
+    QString undoModActions{};
+    switch (modToIgnore) {
+        case LALT:
+            undoModActions += "LALT";
+            break;
+        case RALT:
+            undoModActions += "RALT";
+            break;
+        case LGUI:
+            undoModActions += "LGUI";
+            break;
+        case RGUI:
+            undoModActions += "RGUI";
+            break;
+        case LCTRL:
+        case RCTRL:
+        case NoModifier:
+            break;
+    }
+
+    if (!undoModActions.isEmpty())
+        undoModActions = QString{"<&macro_tap &kp "} + undoModActions + ">";
+
     QString bindings;
     for (auto const &l: val.split(QString())) {
         if (l.isEmpty())
@@ -956,7 +979,11 @@ QString ZmkCodeGenerator::buildMacro(const QString &symbol, const QString &label
         bindings += QString("&kp ") + zmkKeycode(l) + " ";
     }
     QString taps = QString{"<&macro_tap %1>"}.arg(firstOp + bindings.trimmed());
-    QString sequence = (!releaseMods.isEmpty() ? releaseMods + ", " : "") + taps;
+    QString sequence = (!releaseMods.isEmpty() ? releaseMods + ", " : "");
+    if (!undoModActions.isEmpty())
+        sequence += (undoModActions + ", ");
+
+    sequence += taps;
 
     return out.arg(m_schema->prefix(), label, pre, val, sequence).prepend(QString{}.fill(' ', 8)).append("\n");
 }
